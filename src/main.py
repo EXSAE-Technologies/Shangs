@@ -2,6 +2,7 @@ from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QAction,
     QApplication,
+    QFileDialog,
     QLabel,
     QLineEdit,
     QMainWindow,
@@ -46,7 +47,7 @@ class mainWindow(QMainWindow):
         home_btn.triggered.connect(self.navigate_home)
         navtab.addAction(home_btn)
         
-        self.httpsicon = QAction(QIcon(os.path.join(self.source_dir, "images/lock-opened.svg")),"SSL", self)
+        self.httpsicon = QAction(QIcon(os.path.join(self.source_dir, "images/lock-open.svg")),"SSL", self)
         self.httpsicon.setStatusTip("Secure connection")
         navtab.addAction(self.httpsicon)
 
@@ -59,12 +60,34 @@ class mainWindow(QMainWindow):
         stop_btn.triggered.connect(self.browser.stop)
         navtab.addAction(stop_btn)
 
+        file_menu = self.menuBar().addMenu("&File")
+        
+        open_file_action = QAction(QIcon(os.path.join(self.source_dir, "images/html-file.svg")),"Open", self)
+        open_file_action.setStatusTip("Open local file")
+        open_file_action.triggered.connect(self.open_file)
+        file_menu.addAction(open_file_action)
+        
+        save_file_action = QAction(QIcon(os.path.join(self.source_dir, "images/save.svg")),"Save", self)
+        save_file_action.setStatusTip("Save to local file")
+        save_file_action.triggered.connect(self.save_file)
+        file_menu.addAction(save_file_action)
+
         self.browser.setUrl(QUrl("https://google.com"))
         self.setCentralWidget(self.browser)
 
         self.browser.urlChanged.connect(self.update_url_bar)
         self.browser.loadFinished.connect(self.update_title)
     
+    def open_file(self):
+        filename, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Hypertext Markup Language (*.html *.html);;" "All files (*.*)")
+        if filename:
+            self.browser.setUrl(QUrl(filename))
+
+    def save_file(self):
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Page As", "", "Hypertext Markup Language (*.htm *.html);;" "All files (*.*)")
+        if filename:
+            self.browser.page().save(filename)
+
     def update_title(self):
         title = self.browser.page().title()
         self.setWindowTitle("Shangs Browser: %s" % title)
